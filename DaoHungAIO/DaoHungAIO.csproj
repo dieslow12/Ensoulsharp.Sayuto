@@ -87,6 +87,7 @@
     <Compile Include="Champions\Camille.cs" />
     <Compile Include="Champions\Draven.cs" />
     <Compile Include="Champions\Ekko.cs" />
+    <Compile Include="Champions\ElLeesin.cs" />
     <Compile Include="Champions\Fiora.cs" />
     <Compile Include="Champions\Fizz.cs" />
     <Compile Include="Champions\Gragas.cs" />
@@ -97,7 +98,6 @@
     <Compile Include="Champions\Kennen.cs" />
     <Compile Include="Champions\Khazix.cs" />
     <Compile Include="Champions\KogMaw.cs" />
-    <Compile Include="Champions\Leesin.cs" />
     <Compile Include="Champions\Malphite.cs" />
     <Compile Include="Champions\MasterYi.cs" />
     <Compile Include="Champions\Mordekaiser.cs" />
