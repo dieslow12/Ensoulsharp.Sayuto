@@ -43,9 +43,9 @@ namespace DaoHungAIO.Champions
             W = new Spell(SpellSlot.W, 615f);
             E = new Spell(SpellSlot.E, 615f);
             R = new Spell(SpellSlot.R, 1750f);
-            Q.SetSkillshot(0.25f, 55f, 700f, true, false, SkillshotType.Line);
+            Q.SetSkillshot(0.25f, 50, 1700f, true, false, SkillshotType.Line, HitChance.Medium);
 
-            Config = new Menu(ChampionName, "[DH]" + ChampionName, true);
+            Config = new Menu(ChampionName, "DH." + ChampionName, true);
 
             #region Combo
             Menu combo = new Menu("Combo", "Combo");
@@ -53,7 +53,6 @@ namespace DaoHungAIO.Champions
             combo.Add(new MenuBool("UseQCombo", "Use Q", true));
             combo.Add(new MenuBool("UseWCombo", "Use W"));
             combo.Add(new MenuBool("UseECombo", "Use E"));
-            combo.Add(new MenuList("ComboPriority", "Combo Priority", new[] { "Q(Max Damage)", "W(Max stun)" })).Permashow();
             combo.Add(new MenuKeyBind("ComboActive", "Combo!", Keys.Space, KeyBindType.Press)).Permashow();
             Config.Add(combo);
             #endregion
@@ -77,7 +76,7 @@ namespace DaoHungAIO.Champions
 
             #region Farming
             Menu Farm = new Menu("Farm", "Farm");
-            Farm.Add(new MenuBool("EnabledFarm", "Enable! (On/Off: Mouse Scroll)")).Permashow();
+            Farm.Add(new MenuBool("EnabledFarm", "Enable Skill Farm! (On/Off: Mouse Scroll)")).Permashow();
             Farm.Add(new MenuList("UseQFarm", "Use Q", new[] { "LastHit", "LaneClear", "Both", "No" }, 2));
             Farm.Add(new MenuList("UseWFarm", "Use W", new[] { "LastHit", "LaneClear", "Both", "No" }, 1));
             Farm.Add(new MenuList("UseEFarm", "Use E", new[] { "LastHit", "LaneClear", "Both", "No" }, 1));
@@ -125,18 +124,6 @@ namespace DaoHungAIO.Champions
             Config["Farm"].GetValue<MenuBool>("EnabledFarm").Enabled = !Config["Farm"].GetValue<MenuBool>("EnabledFarm").Enabled;
         }
 
-        //static void AIBaseClientProcessSpellCast(AIBaseClient s, AIBaseClientProcessSpellCastEventArgs a)
-        //{
-        //    if (Config["Combo"].GetValue<MenuList>("ComboPriority").SelectedValue == "W(Max stun)")
-        //    {
-        //        return;
-        //    }
-        //    if(s == Player)
-        //    {
-        //        Game.Print("Total Time" + a.TotalTime);
-        //        Game.Print("msspeed" + a.SData.MissileSpeed);
-        //    }
-        //}
 
         private static void AntiGapcloser_OnEnemyGapcloser(AIHeroClient sender, Gapcloser.GapcloserArgs args)
         {
@@ -148,12 +135,12 @@ namespace DaoHungAIO.Champions
             {
                 if (attacker.HasBuff("ryzee"))
                 {
-                    W.Cast(attacker, true);
+                    W.Cast(attacker);
                 }
                 else
                 {
-                    E.Cast(attacker, true);
-                    W.Cast(attacker, true);
+                    E.Cast(attacker);
+                    W.Cast(attacker);
                 }
             }
         }
@@ -198,53 +185,48 @@ namespace DaoHungAIO.Champions
 
             if (laneClear)
             {
-                var allMinions = GameObjects.EnemyMinions.Where(x => x.IsValidTarget(E.Range)).OrderBy(m => m.Health / m.MaxHealth * 100).Cast<AIBaseClient>().ToList();
-                var MinionLeastHp = allMinions.FirstOrDefault();
-                if (MinionLeastHp != null && useQ && Q.IsReady() && Player.Mana > 500)
-                {
-                    var QCanHit = GameObjects.EnemyMinions.Where(x => x.IsValidTarget(Q.Range)).OrderBy(m => m.Health / m.MaxHealth * 100).Cast<AIBaseClient>().ToList();
-                    if (QCanHit.FirstOrDefault() != null)
-                        Q.Cast(QCanHit.FirstOrDefault(), true);
-                }
+                var allMinions = GameObjects.GetMinions(Q.Range);
+                var minionInCenter = allMinions.OrderByDescending(m => m.CountMinion(300)).FirstOrDefault();
                 if (useE && E.IsReady())
                 {
-                    E.Cast(MinionLeastHp, true);
+                    E.Cast(minionInCenter);
                 }
                 else if (useQ && Q.IsReady())
                 {
-                    var MinionsHasEBuff = GameObjects.EnemyMinions.Where(x => x.IsValidTarget(Q.Range) && x.HasBuff("ryzee")).OrderBy(m => m.Distance(Player)).Cast<AIBaseClient>().ToList();
-                    var MinionHasEBuffNearst = MinionsHasEBuff.FirstOrDefault();
-                    if(MinionHasEBuffNearst != null){
-                    
-                        Q.Cast(MinionHasEBuffNearst, true);
-                        }
+                    var nearMinions = allMinions.OrderBy(m => m.DistanceToPlayer()).FirstOrDefault();
+                    var minihasE = allMinions.Where(obj => obj.HasBuff("ryzee")).OrderBy(m => m.DistanceToPlayer()).FirstOrDefault();
+                    if(minihasE != null)
+                    {
+                        Q.Cast(minihasE);
+                    } else if (nearMinions != null)
+                        Q.Cast(nearMinions);
                 }
                 else if (useW && W.IsReady())
                 {
-                    W.Cast(MinionLeastHp, true);
+                    W.Cast(minionInCenter);
                 }
             }
             else
             {
-                var minionsWE = GameObjects.EnemyMinions.Where(x => x.IsValidTarget(E.Range)).OrderBy(m => m.Health).Cast<AIBaseClient>().ToList();
+                var minionsWE = GameObjects.GetMinions(E.Range).OrderBy(m => m.Health);
 
                 if (useQ && Q.IsReady())
                 {
-                    var minionsCanKill = minionsWE.Where(m => Q.GetDamage(m) >= m.Health).Cast<AIBaseClient>().ToList().FirstOrDefault();
+                    var minionsCanKill = minionsWE.Where(m => Q.GetDamage(m) >= m.Health).FirstOrDefault();
                     if (minionsCanKill != null)
-                        Q.Cast(minionsCanKill, true);
+                        Q.Cast(minionsCanKill);
                 }
                 if (useE && E.IsReady())
                 {
-                    var minionsCanKill = minionsWE.Where(m => E.GetDamage(m) >= m.Health).Cast<AIBaseClient>().ToList().FirstOrDefault();
+                    var minionsCanKill = minionsWE.Where(m => E.GetDamage(m) >= m.Health).FirstOrDefault();
                     if (minionsCanKill != null)
-                        E.Cast(minionsCanKill, true);
+                        E.Cast(minionsCanKill);
                 }
                 if (useW && W.IsReady())
                 {
-                    var minionsCanKill = minionsWE.Where(m => W.GetDamage(m) >= m.Health).Cast<AIBaseClient>().ToList().FirstOrDefault();
+                    var minionsCanKill = minionsWE.Where(m => W.GetDamage(m) >= m.Health).FirstOrDefault();
                     if (minionsCanKill != null)
-                        W.Cast(minionsCanKill, true);
+                        W.Cast(minionsCanKill);
                 }
             }
         }
@@ -260,19 +242,68 @@ namespace DaoHungAIO.Champions
                 var mob = mobs[0];
                 if (useE && E.IsReady())
                 {
-                    E.Cast(mob, true);
+                    E.Cast(mob);
                 }
                 if (useQ && Q.IsReady())
                 {
-                    Q.Cast(mob, true);
+                    Q.Cast(mob);
                 }
                 if (useW && W.IsReady() && (Player.Mana >= Q.Mana + W.Mana && !Q.IsReady()))
                 {
-                    W.Cast(mob, true);
+                    W.Cast(mob);
                 }
             }
         }
 
+
+        private static void CastQ(AIBaseClient target)
+        {
+            if (target == null)
+            {
+                return;
+            }
+            var predQ = Q.GetPrediction(target);
+            if (predQ.Hitchance == HitChance.Collision)
+            {
+                var colObj = predQ.CollisionObjects.Where(obj => obj.HasBuff("ryzee") && obj.Distance(target) <= 350 && obj.IsValidTarget(Q.Range)).OrderBy(obj => obj.DistanceToPlayer()).FirstOrDefault();
+                if (colObj != null)
+                {
+                    Q.Cast(colObj);
+                } else if(E.IsReady())
+                {
+                    CastE();
+                }
+                else if (predQ.Hitchance >= HitChance.Low)
+                {
+                    Q.Cast(predQ.UnitPosition);
+                }
+                
+            }
+            else if(predQ.Hitchance >= HitChance.Low)
+            {
+                Q.Cast(predQ.UnitPosition);
+            }
+        }
+        private static void CastE()
+        {
+            var target = TargetSelector.GetTarget(E.Range + 350);
+
+            if (target == null)
+            {
+                return;
+            }
+            if (target.IsValidTarget(E.Range))
+            {
+                E.Cast(target);
+            } else
+            {
+                var colNear = GameObjects.AttackableUnits.Where(obj => obj is AIBaseClient && obj.Distance(target) <= 300 && obj.IsValidTarget(E.Range)).OrderBy(obj => obj.DistanceToPlayer()).FirstOrDefault();
+                if(colNear != null)
+                {
+                    E.Cast(colNear as AIBaseClient);
+                }
+            }
+        }
         static void Combo()
         {
             var target = TargetSelector.GetTarget(E.Range);
@@ -289,95 +320,16 @@ namespace DaoHungAIO.Champions
             var useW = Config["Combo"].GetValue<MenuBool>("UseWCombo");
             var useE = Config["Combo"].GetValue<MenuBool>("UseECombo");
 
-
-            switch (Config["Combo"].GetValue<MenuList>("ComboPriority").SelectedValue)
+            if (Q.IsReady() && useQ)
             {
-                case "Q(Max Damage)": // q  - e - q - w - 
-                    if (Player.Mana >= Q.Mana * 3 + E.Mana + W.Mana)
-                    {
-                        if (useQ && Q.IsReady())
-                        {
-                            Q.Cast(target, true);
-                        }
-                        if (useE && E.IsReady() && !Q.IsReady())
-                        {
-                            E.Cast(target, true);
-                        }
-                        if (useW && W.IsReady() && !Q.IsReady() && !E.IsReady())
-                        {
-                            if (target.HasBuff("ryzee"))
-                                W.Cast(target, true);
-                        }
-                    }
-                    else if (Player.Mana >= Q.Mana * 2 + E.Mana)
-                    {
-                        if (useQ && Q.IsReady())
-                        {
-                            Q.Cast(target, true);
-                        }
-                        if (useE && E.IsReady() && !Q.IsReady())
-                        {
-                            E.Cast(target, true);
-                        }
-
-                    }
-                    else if (Player.Mana >= Q.Mana + E.Mana)
-                    {
-                        if (useE && E.IsReady())
-                        {
-                            E.Cast(target, true);
-                        }
-                        if (useQ && Q.IsReady())
-                        {
-                            Q.Cast(target, true);
-                        }
-
-                    }
-                    else
-                    {
-                        Q.Cast(target, true);
-                        E.Cast(target, true);
-                    }
-                    break;
-                case "W(Max stun)": // q - e - w - q
-                    if (Player.Mana >= Q.Mana * 2 + W.Mana + E.Mana || Player.Mana >= Q.Mana + W.Mana + E.Mana)
-                    {
-                        if (useW && W.IsReady() && target.HasBuff("ryzee"))
-                        {
-                            W.Cast(target, true);
-                        }
-                        if (useE && E.IsReady())
-                        {
-                            E.Cast(target, true);
-                            DelayAction.Add((int)(target.Distance(Player.Position) / 3.5f + Game.Ping), () => {
-                                W.Cast(target, true);
-                            });
-                        }
-                        if (useQ && Q.IsReady() && (!target.HasBuff("ryzee") || !W.IsReady()))
-                        {
-                            Q.Cast(target, true);
-                        }
-
-                    }
-                    else if (Player.Mana >= +W.Mana + E.Mana)
-                    {
-                        if (useW && W.IsReady() && target.HasBuff("ryzee"))
-                        {
-                            W.Cast(target, true);
-                        }
-                        if (useE && E.IsReady())
-                        {
-                            E.Cast(target, true);
-                        }
-
-                    }
-                    else
-                    {
-                        W.Cast(target, true);
-                    }
-                    break;
+                CastQ(target);
+            } else if (E.IsReady() && useE)
+            {
+                CastE();
+            } else if(W.IsReady() && useW)
+            {
+                W.Cast(target);
             }
-
         }
 
         static void Harass()
@@ -386,16 +338,16 @@ namespace DaoHungAIO.Champions
                 return;
 
             var targetQ = TargetSelector.GetTargets(Q.Range).Where(t => t.IsValidTarget(Q.Range)).OrderBy(x => 1 / x.Health).FirstOrDefault();
-            var targetE = TargetSelector.GetTarget(E.Range);
+            var targetE = TargetSelector.GetTarget(E.Range + 150);
             if (targetQ != null || targetE != null)
             {
                 if (Config["Harass"].GetValue<MenuBool>("UseQHarass") && Q.IsReady() && targetQ != null)
                 {
-                    Q.Cast(targetQ, true);
+                    CastQ(targetQ);
                 }
                 if (Config["Harass"].GetValue<MenuBool>("UseEHarass") && E.IsReady() && targetE != null)
                 {
-                    E.Cast(targetE);
+                    CastE();
                 }
                 if (Config["Harass"].GetValue<MenuBool>("UseWHarass") && W.IsReady() && targetE != null)
                 {
@@ -406,47 +358,53 @@ namespace DaoHungAIO.Champions
 
         private static void Game_OnGameUpdate(EventArgs args)
         {
-
-            if (Player.IsDead)
+            try
             {
-                return;
-            }
-
-
-
-            //var autoWminTargets = Config["Misc"].GetValue<MenuBool>("AutoW");
-
-
-            if (Config["Combo"].GetValue<MenuKeyBind>("ComboActive").Active)
-            {
-                Combo();
-            }
-            else
-            {
-                if (Config["Harass"].GetValue<MenuKeyBind>("HarassActive").Active ||
-                    (Config["Harass"].GetValue<MenuKeyBind>("HarassActiveT").Active && !Player.HasBuff("Recall")))
+                if (Player.IsDead)
                 {
-                    Harass();
+                    return;
+                }
+
+
+
+                //var autoWminTargets = Config["Misc"].GetValue<MenuBool>("AutoW");
+
+
+                if (Config["Combo"].GetValue<MenuKeyBind>("ComboActive").Active)
+                {
+                    Combo();
                 }
                 else
                 {
-                    var mobs = GameObjects.Jungle.Where(x => x.IsValidTarget(Q.Range)).OrderBy(x => x.MaxHealth).Cast<AIBaseClient>().ToList();
-                    if (mobs.Count == 0)
+                    if (Config["Harass"].GetValue<MenuKeyBind>("HarassActive").Active ||
+                        (Config["Harass"].GetValue<MenuKeyBind>("HarassActiveT").Active && !Player.HasBuff("Recall")))
                     {
-                        var lc = Config["Farm"].GetValue<MenuKeyBind>("LaneClearActive").Active;
-                        if (lc || Config["Farm"].GetValue<MenuKeyBind>("LastHitActive").Active)
-                        {
-                            Farm(lc && (Player.Mana * 100 / Player.MaxMana >= Config["Farm"].GetValue<MenuSlider>("LaneClearManaCheck").Value));
-                        }
+                        Harass();
                     }
                     else
                     {
-                        if (Config["JungleFarm"].GetValue<MenuKeyBind>("JungleFarmActive").Active)
+                        var mobs = GameObjects.GetJungles(Q.Range).OrderBy(x => x.MaxHealth).ToList();
+                        if (mobs.Count() == 0)
                         {
-                            JungleFarm(mobs);
+                            var lc = Config["Farm"].GetValue<MenuKeyBind>("LaneClearActive").Active;
+                            if (lc || Config["Farm"].GetValue<MenuKeyBind>("LastHitActive").Active)
+                            {
+                                Farm(lc && (Player.Mana * 100 / Player.MaxMana >= Config["Farm"].GetValue<MenuSlider>("LaneClearManaCheck").Value));
+                            }
+                        }
+                        else
+                        {
+                            if (Config["JungleFarm"].GetValue<MenuKeyBind>("JungleFarmActive").Active)
+                            {
+                                JungleFarm(mobs);
+                            }
                         }
                     }
                 }
+            } catch(Exception e)
+            {
+                Game.Print(e.Message);
+                Game.Print(e.StackTrace);
             }
         }
 

@@ -360,6 +360,7 @@ namespace DaoHungAIO.Champions
             } catch (Exception e)
             {
                 Game.Print(e.Message);
+                Game.Print(e.StackTrace);
             }
 
         }
