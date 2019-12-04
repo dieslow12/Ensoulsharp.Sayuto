@@ -221,6 +221,10 @@ namespace DaoHungAIO
         {
             return (unit.HasBuff("BlindMonkQOne") || unit.HasBuff("blindmonkqonechaos"));
         }
+        public static int CountMinion(this AIBaseClient unit, int range)
+        {
+            return GameObjects.GetMinions(unit.Position, range).Count();
+        }
 
         public static bool IsValidTarget(this AIHeroClient u)
         {
