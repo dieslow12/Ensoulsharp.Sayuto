@@ -185,7 +185,7 @@ namespace DaoHungAIO.Champions
 
             if (laneClear)
             {
-                var allMinions = GameObjects.GetMinions(Q.Range);
+                var allMinions = GameObjects.GetMinions(E.Range);
                 var minionInCenter = allMinions.OrderByDescending(m => m.CountMinion(300)).FirstOrDefault();
                 if (useE && E.IsReady())
                 {
@@ -383,7 +383,7 @@ namespace DaoHungAIO.Champions
                     }
                     else
                     {
-                        var mobs = GameObjects.GetJungles(Q.Range).OrderBy(x => x.MaxHealth).ToList();
+                        var mobs = GameObjects.GetJungles(E.Range).OrderBy(x => x.MaxHealth).ToList();
                         if (mobs.Count() == 0)
                         {
                             var lc = Config["Farm"].GetValue<MenuKeyBind>("LaneClearActive").Active;
