@@ -313,6 +313,9 @@ namespace DaoHungAIO.Champions
             }
             if (Qcombo.Enabled && _q.IsReady())
             {
+                if (target.IsValidTarget(550) && !_w.IsReady()){
+                    _q.Cast(target);
+                }
                 if (target.IsValidTarget(_q.Range))
                 {
                     _q.ShootChargedSpell(target.Position);
@@ -347,6 +350,9 @@ namespace DaoHungAIO.Champions
             }
             if (Qharass.Enabled && _q.IsReady())
             {
+                if (target.IsValidTarget(550)){
+                    _q.Cast(target);
+                }
                 if (target.IsValidTarget(_q.Range))
                 {
                     _q.ShootChargedSpell(target.Position);

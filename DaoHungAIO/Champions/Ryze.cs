@@ -49,7 +49,8 @@ namespace DaoHungAIO.Champions
 
             #region Combo
             Menu combo = new Menu("Combo", "Combo");
-            combo.Add(new MenuBool("UseQOutRangeEW", "Use Q out range EW", false)).Permashow();
+            combo.Add(new MenuBool("UseQOutRangeEW", "Use Q out range EW", true)).Permashow();
+            combo.Add(new MenuBool("AACombo", "AA in Combo (On/Off: Left Mouse)", true)).Permashow();
             combo.Add(new MenuBool("UseQCombo", "Use Q", true));
             combo.Add(new MenuBool("UseWCombo", "Use W"));
             combo.Add(new MenuBool("UseECombo", "Use E"));
@@ -118,10 +119,14 @@ namespace DaoHungAIO.Champions
         }
         private static void Game_OnWndProc(GameWndProcEventArgs args)
         {
-            if (args.Msg != 520)
-                return;
-
-            Config["Farm"].GetValue<MenuBool>("EnabledFarm").Enabled = !Config["Farm"].GetValue<MenuBool>("EnabledFarm").Enabled;
+            if (args.Msg == (uint)WindowsMessages.MBUTTONDOWN)
+            {
+                Config["Farm"].GetValue<MenuBool>("EnabledFarm").Enabled = !Config["Farm"].GetValue<MenuBool>("EnabledFarm").Enabled;
+            }
+            if (args.Msg == (uint)WindowsMessages.LBUTTONDOWN)
+            {
+                Config["Farm"].GetValue<MenuBool>("AACombo").Enabled = !Config["Farm"].GetValue<MenuBool>("AACombo").Enabled;
+            }
         }
 
 
