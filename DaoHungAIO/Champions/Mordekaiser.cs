@@ -50,7 +50,7 @@ namespace DaoHungAIO.Champions
             r = new Spell(SpellSlot.R, 650);
 
             q.SetSkillshot(.5f, 160, 1200, false, SkillshotType.Line);
-            e.SetSkillshot(.25f, 200, 1200, false, SkillshotType.Line);
+            e.SetSkillshot(.25f, 200, 3000, false, SkillshotType.Line);
             r.SetTargetted(0, float.MaxValue);
 
             menu = new Menu("Mordekaiser", "DH.Mordekaiser", true);

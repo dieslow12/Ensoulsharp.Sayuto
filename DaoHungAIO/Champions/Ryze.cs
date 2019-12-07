@@ -113,10 +113,23 @@ namespace DaoHungAIO.Champions
             Drawing.OnDraw += Drawing_OnDraw;
             //AIHeroClient.OnProcessSpellCast += AIBaseClientProcessSpellCast;
             Gapcloser.OnGapcloser += AntiGapcloser_OnEnemyGapcloser;
+            Orbwalker.OnAction += OnAction;
 
             Game.Print("<font color=\"#FF9900\"><b>DH.Ryze</b></font> Author Sayuto");
             Game.Print("<font color=\"#FF9900\"><b>Feedback send to facebook yts.1996 </b></font>");
         }
+
+        private void OnAction(object sender, OrbwalkerActionArgs args)
+        {
+            if(args.Type == OrbwalkerType.BeforeAttack)
+            {
+                if (Config["Combo"].GetValue<MenuBool>("AACombo").Enabled)
+                {
+                    args.Process = false;
+                }
+            }
+        }
+
         private static void Game_OnWndProc(GameWndProcEventArgs args)
         {
             if (args.Msg == (uint)WindowsMessages.MBUTTONDOWN)
@@ -125,7 +138,7 @@ namespace DaoHungAIO.Champions
             }
             if (args.Msg == (uint)WindowsMessages.LBUTTONDOWN)
             {
-                Config["Farm"].GetValue<MenuBool>("AACombo").Enabled = !Config["Farm"].GetValue<MenuBool>("AACombo").Enabled;
+                Config["Combo"].GetValue<MenuBool>("AACombo").Enabled = !Config["Combo"].GetValue<MenuBool>("AACombo").Enabled;
             }
         }
 
