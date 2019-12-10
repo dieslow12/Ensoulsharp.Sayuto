@@ -209,6 +209,9 @@ namespace DaoHungAIO
                     case "Yasuo":
                         new Yasuo();
                         break;
+                    case "Zoe":
+                        new Zoe();
+                        break;
                     case "Zed":
                         new Zed();
                         break;
