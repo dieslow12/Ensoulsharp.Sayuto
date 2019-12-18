@@ -115,6 +115,7 @@
     <Compile Include="Champions\Varus.cs" />
     <Compile Include="Champions\Velkoz.cs" />
     <Compile Include="Champions\Viktor.cs" />
+    <Compile Include="Champions\Vladimir.cs" />
     <Compile Include="Champions\Yasuo.cs" />
     <Compile Include="Champions\Zed.cs" />
     <Compile Include="Champions\Ziggs.cs" />

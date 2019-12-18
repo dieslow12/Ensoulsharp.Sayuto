@@ -64,7 +64,7 @@ namespace DaoHungAIO.Champions
         private static readonly ItemId[] WardIds =
             {
                 (ItemId)3851, (ItemId)3853, (ItemId)3857, (ItemId)3855, (ItemId)3859, (ItemId)3860, (ItemId)3864, (ItemId)3863, (ItemId)3863, (ItemId)3864,
-                ItemId.Warding_Totem, ItemId.Vision_Ward, ItemId.Control_Ward, ItemId.Greater_Stealth_Totem_Trinket,
+                ItemId.Warding_Totem, ItemId.Vision_Ward, ItemId.Control_Ward, ItemId.Greater_Stealth_Totem_Trinket
                 //(ItemId)2301, (ItemId)2302, (ItemId)2303,  deleted
                 //(ItemId)3711, (ItemId)1411, (ItemId)1410, (ItemId)1408,
                 //(ItemId)1409
@@ -334,17 +334,24 @@ namespace DaoHungAIO.Champions
 
         private static void CastW(AIBaseClient obj)
         {
+            //Game.Print("Cast W");
             if (500 >= Environment.TickCount - wcasttime || WStage != WCastStage.First)
             {
                 return;
             }
 
+            //Game.Print("Cast W 2");
             spells[Spells.W].CastOnUnit(obj);
             wcasttime = Environment.TickCount;
         }
 
         private static void Combo()
         {
+
+            //Player.InventoryItems.ForEach(item =>
+            //{
+            //    Game.Print(item.SpellName + ":" + item.ItemID);
+            //});
             //Player.InventoryItems.ForEach(item =>
             //{
             //    Game.Print(item.Id + " " + item.DisplayName);
@@ -432,7 +439,7 @@ namespace DaoHungAIO.Champions
         {
             return
                 WardIds.Select(wardId => Player.InventoryItems.FirstOrDefault(a => a.Id == wardId))
-                    .FirstOrDefault(slot => slot != null);
+                    .FirstOrDefault(slot => slot != null && Player.CanUseItem(slot.ItemID));
         }
 
         public static void Load()
@@ -459,12 +466,44 @@ namespace DaoHungAIO.Champions
             Orbwalker.OnAction += OrbwalkerAfterAttack;
             GameObject.OnDelete += GameObject_OnDelete;
             Game.OnWndProc += Game_OnWndProc;
+            Game.OnUpdate += OnUpdate;
+        }
+
+        private static void OnUpdate(EventArgs args)
+        {
+            if (InitMenuElLeesin.Menu.Item("InsecEnabled").GetValue<MenuKeyBind>().Active)
+            {
+                if (ParamBool("insecOrbwalk"))
+                {
+                    Orbwalk(Game.CursorPos);
+                }
+
+                var newTarget = ParamBool("insecMode")
+                                    ? TargetSelector.SelectedTarget
+                                    : TargetSelector.GetTarget(
+                                        spells[Spells.Q].Range + 200);
+
+                if (newTarget != null)
+                {
+                    InsecCombo(newTarget);
+                }
+            }
+            else
+            {
+                isNullInsecPos = true;
+                wardJumped = false;
+            }
+
+
+            if (InitMenuElLeesin.Menu.Item("ElLeeSin.Wardjump").GetValue<MenuKeyBind>().Active)
+            {
+                WardjumpToMouse();
+            }
         }
 
         private static void Game_OnGameUpdate(EventArgs args)
         {
             //Console.WriteLine(FindBestWardItem() == );
-
             if (doubleClickReset <= Environment.TickCount && clickCount != 0)
             {
                 doubleClickReset = float.MaxValue;
@@ -525,30 +564,7 @@ namespace DaoHungAIO.Champions
                     Player.Spellbook.CastSpell(igniteSlot, newTarget);
                 }
             }
-
-            if (InitMenuElLeesin.Menu.Item("InsecEnabled").GetValue<MenuKeyBind>().Active)
-            {
-                if (ParamBool("insecOrbwalk"))
-                {
-                    Orbwalk(Game.CursorPos);
-                }
-
-                var newTarget = ParamBool("insecMode")
-                                    ? TargetSelector.SelectedTarget
-                                    : TargetSelector.GetTarget(
-                                        spells[Spells.Q].Range + 200);
-
-                if (newTarget != null)
-                {
-                    InsecCombo(newTarget);
-                }
-            }
-            else
-            {
-                isNullInsecPos = true;
-                wardJumped = false;
-            }
-
+                       
             if (Orbwalker.ActiveMode != OrbwalkerMode.Combo)
             {
                 insecComboStep = InsecComboStepSelect.None;
@@ -566,11 +582,6 @@ namespace DaoHungAIO.Champions
                 case OrbwalkerMode.Harass:
                     Harass();
                     break;
-            }
-
-            if (InitMenuElLeesin.Menu.Item("ElLeeSin.Wardjump").GetValue<MenuKeyBind>().Active)
-            {
-                WardjumpToMouse();
             }
         }
 
@@ -606,13 +617,13 @@ namespace DaoHungAIO.Champions
 
         private static void GameObject_OnCreate(GameObject sender, EventArgs args)
         {
-            if (Environment.TickCount < lastPlaced + 300)
+            if(sender is AIMinionClient && sender.DistanceToPlayer() < spells[Spells.W].Range && InitMenuElLeesin.Menu.Item("ElLeeSin.Wardjump").GetValue<MenuKeyBind>().Active)
             {
-                var ward = (AIBaseClient)sender;
-                if (ward.Name.ToLower().Contains("ward") && ward.Distance(lastWardPos) < 500
-                    && spells[Spells.E].IsReady())
+
+                if (sender.IsAlly && sender.Name.ToLower().Contains("ward") && sender.Distance(Game.CursorPos) < 200)
                 {
-                    spells[Spells.W].Cast(ward);
+                    //Game.Print(sender.Name);
+                    CastW(sender as AIBaseClient);
                 }
             }
         }
@@ -898,6 +909,11 @@ namespace DaoHungAIO.Champions
             {
                 PassiveStacks = 2;
                 passiveTimer = Environment.TickCount + 3000;
+            }
+
+            if(args.SData.Name == "TrinketTotemLvl1")
+            {
+                spells[Spells.W].Cast(args.End);
             }
 
             if (args.SData.Name == "BlindMonkQOne")
@@ -1218,7 +1234,13 @@ namespace DaoHungAIO.Champions
                 }
 
                 Player.Spellbook.CastSpell(ward.SpellSlot, JumpPos.ToVector3());
+                //Utility.DelayAction.Add(200 + Game.Ping * 2, () => {
+                //    Game.Print("find ward");
+                //    var wardPut = GameObjects.AllGameObjects.Where(w => w.Name.ToLower().Contains("ward") && w.Distance(JumpPos) < 100).FirstOrDefault();
 
+                //    Game.Print(wardPut.Name);
+                //    CastQ(wardPut as AIBaseClient);
+                //});
                 lastWardPos = JumpPos.ToVector3();
                 LastWard = Environment.TickCount;
             }
