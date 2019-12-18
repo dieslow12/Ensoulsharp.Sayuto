@@ -911,10 +911,6 @@ namespace DaoHungAIO.Champions
                 passiveTimer = Environment.TickCount + 3000;
             }
 
-            if(args.SData.Name == "TrinketTotemLvl1")
-            {
-                spells[Spells.W].Cast(args.End);
-            }
 
             if (args.SData.Name == "BlindMonkQOne")
             {
