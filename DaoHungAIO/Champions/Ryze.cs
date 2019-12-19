@@ -121,7 +121,7 @@ namespace DaoHungAIO.Champions
 
         private void OnAction(object sender, OrbwalkerActionArgs args)
         {
-            if(args.Type == OrbwalkerType.BeforeAttack)
+            if(Orbwalker.ActiveMode == OrbwalkerMode.Combo && args.Type == OrbwalkerType.BeforeAttack)
             {
                 if (Config["Combo"].GetValue<MenuBool>("AACombo").Enabled)
                 {
