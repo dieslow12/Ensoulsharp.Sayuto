@@ -104,6 +104,9 @@ namespace DaoHungAIO.Champions
                 return;
             }
 
+            if (player.CanUseItem(3907)) {
+                player.UseItem(3907);
+            }
             if (R.IsReady() && target.IsValidTarget(R.Range))
             {
                 R.Cast(target);

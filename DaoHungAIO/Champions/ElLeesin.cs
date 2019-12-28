@@ -397,12 +397,12 @@ namespace DaoHungAIO.Champions
             if (ParamBool("ElLeeSin.Combo.W"))
             {
                 if (ParamBool("ElLeeSin.Combo.Mode.WW")
-                    && target.Distance(Player) > Player.GetRealAutoAttackRange())
+                    && target.Distance(Player) > Player.GetRealAutoAttackRange() && !spells[Spells.Q].IsReady())
                 {
                     WardJump(target.Position, false, true);
                 }
 
-                if (!ParamBool("ElLeeSin.Combo.Mode.WW") && !spells[Spells.Q].IsReady() && target.Distance(Player) > spells[Spells.Q].Range)
+                if (!ParamBool("ElLeeSin.Combo.Mode.WW") && spells[Spells.Q].IsReady() && target.Distance(Player) > spells[Spells.Q].Range)
                 {
                     WardJump(target.Position, false, true);
                 }
@@ -460,46 +460,14 @@ namespace DaoHungAIO.Champions
             }
 
             Drawing.OnDraw += DrawingElLeesin.Drawing_OnDraw;
-            Tick.OnTick += Game_OnGameUpdate;
+            Game.OnUpdate += Game_OnGameUpdate;
             AIBaseClient.OnProcessSpellCast += AIBaseClient_OnProcessSpellCast;
             GameObject.OnCreate += GameObject_OnCreate;
             Orbwalker.OnAction += OrbwalkerAfterAttack;
             GameObject.OnDelete += GameObject_OnDelete;
             Game.OnWndProc += Game_OnWndProc;
-            Game.OnUpdate += OnUpdate;
         }
 
-        private static void OnUpdate(EventArgs args)
-        {
-            if (InitMenuElLeesin.Menu.Item("InsecEnabled").GetValue<MenuKeyBind>().Active)
-            {
-                if (ParamBool("insecOrbwalk"))
-                {
-                    Orbwalk(Game.CursorPos);
-                }
-
-                var newTarget = ParamBool("insecMode")
-                                    ? TargetSelector.SelectedTarget
-                                    : TargetSelector.GetTarget(
-                                        spells[Spells.Q].Range + 200);
-
-                if (newTarget != null)
-                {
-                    InsecCombo(newTarget);
-                }
-            }
-            else
-            {
-                isNullInsecPos = true;
-                wardJumped = false;
-            }
-
-
-            if (InitMenuElLeesin.Menu.Item("ElLeeSin.Wardjump").GetValue<MenuKeyBind>().Active)
-            {
-                WardjumpToMouse();
-            }
-        }
 
         private static void Game_OnGameUpdate(EventArgs args)
         {
@@ -537,6 +505,34 @@ namespace DaoHungAIO.Champions
             if (Player.IsDead || MenuGUI.IsChatOpen || Player.IsRecalling())
             {
                 return;
+            }
+            if (InitMenuElLeesin.Menu.Item("InsecEnabled").GetValue<MenuKeyBind>().Active)
+            {
+                if (ParamBool("insecOrbwalk"))
+                {
+                    Orbwalk(Game.CursorPos);
+                }
+
+                var newTarget = ParamBool("insecMode")
+                                    ? TargetSelector.SelectedTarget
+                                    : TargetSelector.GetTarget(
+                                        spells[Spells.Q].Range + 200);
+
+                if (newTarget != null)
+                {
+                    InsecCombo(newTarget);
+                }
+            }
+            else
+            {
+                isNullInsecPos = true;
+                wardJumped = false;
+            }
+
+
+            if (InitMenuElLeesin.Menu.Item("ElLeeSin.Wardjump").GetValue<MenuKeyBind>().Active)
+            {
+                WardjumpToMouse();
             }
 
             if ((ParamBool("insecMode")
@@ -1182,6 +1178,7 @@ namespace DaoHungAIO.Champions
                         }
 
                         CastW(champs[0]);
+                        //Game.Print("Cast Champions");
                         return;
                     }
                 }
@@ -1200,6 +1197,7 @@ namespace DaoHungAIO.Champions
                         }
 
                         CastW(minion2[0]);
+                        //Game.Print("Cast minions");
                         return;
                     }
                 }

@@ -84,6 +84,7 @@
   <ItemGroup>
     <Compile Include="Champions\Ahri.cs" />
     <Compile Include="Champions\Akali.cs" />
+    <Compile Include="Champions\Azir.cs" />
     <Compile Include="Champions\Camille.cs" />
     <Compile Include="Champions\Draven.cs" />
     <Compile Include="Champions\Ekko.cs" />
@@ -145,6 +146,7 @@
     <Compile Include="Evade\SpellDatabase.cs" />
     <Compile Include="Evade\Utils.cs" />
     <Compile Include="Helpers\Extensions.cs" />
+    <Compile Include="Helpers\Util.cs" />
     <Compile Include="MenuExtensions.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
