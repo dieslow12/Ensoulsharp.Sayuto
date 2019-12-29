@@ -429,6 +429,7 @@ namespace DaoHungAIO.Champions
                 if (Variables.TickCount - E.LastCastAttemptT < 0)
                 {
                     Q2.Cast(Game.CursorPos);
+
                 }
             }
         }
@@ -440,7 +441,11 @@ namespace DaoHungAIO.Champions
             if ((E.IsReady()))
             {
                 if (soilderCount() < 1 && W.IsReady())
+                {
                     W.Cast(wVec);
+                    Utility.DelayAction.Add((int)W.Delay + 100, () => E.Cast(wVec));
+                    Utility.DelayAction.Add((int)(W.Delay + E.Delay) + 100, () => Q2.Cast(Game.CursorPos));
+                }
                 else if (soilderCount() < 1 && !W.IsReady())
                     return;
 
@@ -458,7 +463,17 @@ namespace DaoHungAIO.Champions
                 else if (W.IsReady())
                 {
                     W.Cast(wVec);
+                    Utility.DelayAction.Add((int)W.Delay + 100, () => E.Cast(wVec));
+                    Utility.DelayAction.Add((int)(W.Delay + E.Delay) + 100, () => Q2.Cast(Game.CursorPos));
                 }
+            } else
+            {
+                //if (Variables.TickCount - E.LastCastAttemptT < 1000)
+                //{
+                //    Game.Print("Cast Q");
+                //    Q2.Cast(Game.CursorPos);
+                //    Q.Cast(Game.CursorPos);
+                //}
             }
 
         }
