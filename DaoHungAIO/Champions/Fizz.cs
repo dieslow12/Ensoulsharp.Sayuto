@@ -309,7 +309,7 @@ namespace DaoHungAIO.Champions
 
                 }
 
-                if (Q.IsEnabledAndReady())
+                if (Q.IsEnabledAndReady() && target.IsValidTarget(Q.Range))
                 {
                     Q.Cast(target);
                 }
@@ -353,7 +353,7 @@ namespace DaoHungAIO.Champions
                 W.Cast();
             }
 
-            if (Q.IsEnabledAndReady())
+            if (Q.IsEnabledAndReady() && target.IsValidTarget(Q.Range))
             {
                 Q.Cast(target);
             }
