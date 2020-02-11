@@ -110,7 +110,9 @@
     <Compile Include="Champions\Qiyana.cs" />
     <Compile Include="Champions\Renekton.cs" />
     <Compile Include="Champions\RivenReborn.cs" />
+    <Compile Include="Champions\Rumble.cs" />
     <Compile Include="Champions\Ryze.cs" />
+    <Compile Include="Champions\Sett.cs" />
     <Compile Include="Champions\Syndra.cs" />
     <Compile Include="Champions\Tristana.cs" />
     <Compile Include="Champions\Varus.cs" />

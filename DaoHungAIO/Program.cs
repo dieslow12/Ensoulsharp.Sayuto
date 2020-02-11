@@ -191,8 +191,14 @@ namespace DaoHungAIO
                     case "Renekton":
                         new Renekton();
                         break;
+                    case "Rumble":
+                        new Rumble();
+                        break;
                     case "Ryze":
                         new Ryze();
+                        break;
+                    case "Sett":
+                        new Sett();
                         break;
                     case "Syndra":
                         new Syndra();
