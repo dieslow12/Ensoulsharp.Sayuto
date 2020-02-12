@@ -52,6 +52,7 @@ namespace DaoHungAIO.Champions
 
         private int lastPunch = 3;
         private AIHeroClient useRNow = null;
+        private float lastPunchTime = 0;
         private static readonly List<BuffType> CCList = new List<BuffType>() { BuffType.Blind, BuffType.Fear, BuffType.Knockback, BuffType.Knockup, BuffType.Sleep, BuffType.Stun, BuffType.Taunt, BuffType.Suppression, BuffType.Slow };
         #endregion
         public Sett()
@@ -131,6 +132,7 @@ namespace DaoHungAIO.Champions
                     {
                         lastPunch = 1;
                     }
+                    lastPunchTime = Game.Time;
                 }
             }
         }
@@ -183,6 +185,10 @@ namespace DaoHungAIO.Champions
                
         private void OnTick(EventArgs args)
         {
+            if(lastPunch != 3 && Game.Time - lastPunch > 1.5f)
+            {
+                lastPunch = 3;
+            }
             if (!Player.IsDead)
             {
                 switch (Orbwalker.ActiveMode)
